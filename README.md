@@ -378,6 +378,7 @@ D:\course-notes\getlec.cmd
 | `test_naming.py` | 命名规则测试（8 项） |
 | `test_cmd_ascii.py` | `.cmd` 规范校验（纯 ASCII / CRLF / 注释无尖括号） |
 | `test_base_headers.py [清单]` | 请求头回归测试（验证不用 Cookie 也能下） |
+| `test_scrape.js` | 抓取脚本逻辑测试（需 Node，**仅测试用**） |
 
 ---
 
@@ -621,6 +622,27 @@ python D:\course-notes\tools\test_base_headers.py  :: 需联网 + 新鲜清单
 [BOM 同课时]      PASS
 全部通过
 ```
+
+### `test_scrape.js` — 抓取脚本逻辑（需 Node，7 项，不联网）
+
+用假 fetch 模拟接口和页面环境，验证 `scrape_course.js` 的行为：列表翻页、跳过未开始的活动、只导 ENCODER、文件名与表头。
+
+```bat
+node D:\course-notes\tools\test_scrape.js
+```
+
+```text
+[PASS] 列表接口调用 1 次
+[PASS] 只查了已开始的 15 节
+[PASS] 文件名是 测试课程.txt
+[PASS] 清单里 15 条地址
+[PASS] 只导了 ENCODER
+[PASS] 未开始的节没被下载
+[PASS] 有表头注释
+全部通过
+```
+
+> 只有测试需要 Node；**运行程序本身不需要**。
 
 ### `test_base_headers.py` — 请求头回归
 

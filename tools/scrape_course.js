@@ -56,9 +56,19 @@
   if (!live.length) { alert('这门课没有 lecture_live 类型的活动'); return; }
   console.log(`[scrape] lecture_live 共 ${live.length} 条`);
 
+  // 未开始的节没有回放，先按状态过滤掉，省掉无谓的详情请求
+  const started = live.filter(it => {
+    if (it.is_started === false) {
+      console.log(`[scrape] ${it.id} ${it.title} 未开始，跳过（出回放后重跑本脚本即可）`);
+      return false;
+    }
+    return true;
+  });
+  console.log(`[scrape] 需要查详情的 ${started.length} 条`);
+
   // ---------- 2. 逐节取回放轨 ----------
   const rows = [];
-  for (const it of live) {
+  for (const it of started) {
     try {
       const r = await fetch(`/api/activities/${it.id}`, { credentials: 'include' });
       if (!r.ok) { console.warn(`[scrape] ${it.id} HTTP ${r.status}`); continue; }
