@@ -12,8 +12,8 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
 from get_media import probe  # noqa: E402
-from lectures import (ROOT, labels_parts, load_urls,  # noqa: E402
-                      label_of, session_key, track_of)
+from lectures import (ROOT, already_done, labels_parts, load_urls,  # noqa: E402
+                      label_of, session_key, target_paths, track_of)
 
 
 def check_list(path):
@@ -31,13 +31,20 @@ def check_list(path):
         groups.setdefault(session_key(u), []).append(u)
 
     bad = 0
-    print(f"{'状态':<8} {'大小':>10}  {'落点'}")
+    done = 0
+    print(f"{'状态':<10} {'大小':>10}  {'落点'}")
     print("-" * 68)
     for key, us in groups.items():
         label = label_of(us[0])
         date, span = labels_parts(label)
         multi = (outdir / date / ".multi").exists()
         base = f"{course}_{date}" + (f"_{span}" if multi and span else "")
+        mp4, m4a = target_paths(outdir, label)
+        if already_done(mp4, m4a):
+            # 已下载的节不再探测：长期清单里旧地址多半已过期，探测只会刷假的失败
+            print(f"[已下载] {'':>10}  {course}\\{date}\\{base}.mp4  ({track_of(us[0])})")
+            done += 1
+            continue
         for u in us:
             ok, total, err = probe(u)
             if not ok:
@@ -48,7 +55,7 @@ def check_list(path):
             if err:
                 print(f"        !! {err}")
         print()
-    print(f"  {len(groups)} 节 / 无效 {bad} 条\n")
+    print(f"  {len(groups)} 节：已下载 {done} / 待下载 {len(groups)-done} / 其中无效 {bad}\n")
     return bad
 
 
