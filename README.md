@@ -175,12 +175,29 @@ D:\course-notes\getlec.cmd lists\计网.txt INSTRUCTOR
 
 | 步骤 | 接口 | 要登录？ |
 |---|---|---|
-| 1. 列出课程节次 | 课程页 / 页面 DOM | ✅ 要 |
+| 1. 列出课程节次 | `GET /api/courses/<courseId>/live-activities` | ✅ 要 |
 | 2. 取每节的回放轨地址 | `GET /api/activities/<activityId>` | ✅ 要 |
 | 3. 换成签名直链 | `incast.../preview?previewToken=` → **302** | ❌ 不要 |
 | 4. 下载 | `ilesson.../ENCODER-...?ts=&token=` | ❌ 不要 |
 
 **结论：只有前两步需要你的登录态。** 所以在浏览器里跑一小段脚本收集地址，其余全交给本地程序。
+
+接口形状（供以后维护用，实测于 2026-11）：
+
+```text
+GET /api/courses/<courseId>/live-activities
+    ?status=&types[]=lecture_live&types[]=third_party_live
+    &page=<n>&page_size=<n>
+→ {"items":[{id,title,start_time,type},...], "total":17, "pages":2, "page":2}
+   ⚠️ items 里【没有】replay_videos，必须再逐节查详情
+
+GET /api/activities/<activityId>
+→ data.external_live_detail.replay_videos[]
+   [{camera_type: encoder|students|instructor,
+     url: https://incast.../videos/<cameraId>/preview?previewToken=xxx}]
+```
+
+> 未登录访问上面两个接口返回 401 —— 所以脚本只能在已登录的页面里跑。
 
 ### 用法
 
@@ -212,9 +229,11 @@ https://incast.wh.bjtu.edu.cn/api/base/orgs/bjtu/captures/<hash>/videos/280740/p
 
 ### 已知限制
 
-`scrape_course.js` 从**页面 DOM** 里收集 activityId。如果列表是分页加载的，可能只抓当前页。
+`scrape_course.js` 现在**纯走接口**（列表接口自动翻页），不依赖页面 DOM，所以不受列表分页影响。
 
-真遇到抓不全，就需要再多一个「课程 → 全部节次」的列表接口（导出一次课程页 HAR 即可定位）。目前 20 节量级通常一页能装下。
+唯一的前提是：必须在**该课程的页面**里运行（地址里要有 `/course/<数字>/`），因为脚本要从 URL 里读课程 id。
+
+如果哪天接口改版，脚本会明确报错（`列表接口失败 HTTP xxx`），而不是静默抓不到。
 
 ### 自动收编下载的清单
 
