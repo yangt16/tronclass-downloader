@@ -1,0 +1,18 @@
+# ---- 体积：绝不提交 ----
+media/
+bin/
+python/
+
+# ---- 敏感：带 ts/token 签名的地址，等于会话凭据 ----
+har_archive/
+lists/*.txt
+
+# ---- 生成物 / 临时 ----
+tmp/
+lists/*.md
+__pycache__/
+*.pyc
+*.log
+
+# ---- 自己的历史草稿，不进仓库 ----
+TronClass课程转写_开工提示词.md

@@ -1,0 +1,7 @@
+# .cmd 必须是 CRLF：cmd.exe 的 goto/call 靠 CRLF 计算标签偏移，
+# LF-only 会报 "cannot find the batch label specified"。
+*.cmd text eol=crlf
+
+# Python / Markdown 统一 LF
+*.py   text eol=lf
+*.md   text eol=lf
