@@ -201,15 +201,29 @@ GET /api/activities/<activityId>
 
 ### 用法
 
-1. 打开这门课的「直播/回放」列表页（地址形如 `/course/26384/live-activities`），等列表加载出来
+**推荐：装成书签，每门课点一下**
+
+1. 用 Edge 打开 `dist\install.html`（本地文件，双击即可）
+2. 按 `Ctrl+Shift+B` 显示书签栏
+3. 把页面里那个蓝色按钮**拖到书签栏**（是拖拽，不是点击），可右键改名为「抓取课程清单」
+4. 打开某门课的「直播」列表页（地址里有 `/course/<数字>/live-activities`）
+5. **点一下书签** → 弹框填课程名 → 选是否导出三条轨（选**取消**=只导 ENCODER）
+6. 浏览器下载 `<课程名>.txt`
+7. 双击 `getlec.cmd` —— 它会**自动把下载文件夹里的清单收进 `lists\`** 并开始下载
+
+**手动版（不想装书签时）**
+
+1. 打开课程「直播」列表页，等列表加载出来
 2. `F12` → **Sources** → 左侧 `>>` → **代码片段** → **新建代码片段**
 3. 把 `tools\scrape_course.js` 的内容**全部**粘进去
 4. `Ctrl+Enter` 运行
-5. 弹框里填课程名（默认取页面标题），选"是否导出三条轨"（选**取消**=只导 ENCODER）
-6. 浏览器会下载 `<课程名>.txt`
-7. 双击 `getlec.cmd` —— 它会**自动把下载文件夹里的清单收进 `lists\`** 并开始下载
+5. 后面的弹框和导出步骤同上
 
-所以完整流程变成：**点一下脚本 → 双击一次**，整门课就排队下完了。
+> 书签是编译产物：`tools\scrape_course.js` 是源码，运行
+> `node tools\build_bookmarklet.js` 会生成 `dist\bookmarklet.txt`（一行 javascript: 地址）
+> 和 `dist\install.html`（拖拽安装页）。**改了源码要重新 build。**
+
+所以完整流程变成：**点一下书签 → 双击一次**，整门课就排队下完了。
 
 ### 课程还在进行：每周重跑一次脚本
 
@@ -569,17 +583,19 @@ D:\course-notes\                          ← 整个文件夹可搬到任意位�
 ├─ bin\
 │  ├─ ffmpeg.exe             9.0.2
 │  └─ ffprobe.exe
-├─ tools\                    10 个脚本
+├─ tools\                    12 个脚本
 │  ├─ get_media.py           请求头基线 + 探活 + 分块下载 + resolve 间接地址
 │  ├─ lectures.py            主编排：解析→下载→抽音轨→命名→归档→刷索引
 │  ├─ lists.py               列出待下载清单 / 空清单指引
 │  ├─ import_lists.py        收编浏览器导出的抓取清单
-│  ├─ scrape_course.js       浏览器里跑的整门课抓取脚本
+│  ├─ scrape_course.js       浏览器里跑的整门课抓取脚本（书签源码）
+│  ├─ build_bookmarklet.js   把上面那个编译成书签 + 安装页（需 Node）
 │  ├─ check_urls.py          下载前预检
 │  ├─ make_index.py          生成已下载清单
 │  ├─ test_naming.py         命名测试（8 项）
 │  ├─ test_cmd_ascii.py      .cmd 规范校验
 │  └─ test_base_headers.py   请求头回归
+├─ dist\                     ★ 抓取书签（install.html 拖拽安装）
 ├─ lists\                    ★ 在这里建 <科目>.txt
 │  ├─ 计网.txt               待下载队列（粘地址）
 │  ├─ 计网.md                已下载索引（自动生成）

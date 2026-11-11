@@ -1,14 +1,25 @@
 /**
- * 离线验证 scrape_course.js 的逻辑：用假 fetch/假页面环境跑一遍，
+ * 离线验证 scrape_course.js（或编译后的书签）的逻辑：用假 fetch/假页面环境跑一遍，
  * 检查它拉了几页、跳过了几节、生成的清单内容对不对。
  *
- * 用法: node tools/test_scrape.js   （测试用，运行程序本身不需要 Node）
+ * 用法:
+ *   node tools/test_scrape.js                       测试 tools/scrape_course.js
+ *   node tools/test_scrape.js dist/bookmarklet.txt  测试编译好的书签
  */
 const fs = require('fs');
 const path = require('path');
 
-const SRC = path.join(__dirname, 'scrape_course.js');
-const code = fs.readFileSync(SRC, 'utf8');
+const SRC = process.argv[2]
+  ? path.resolve(process.argv[2])
+  : path.join(__dirname, 'scrape_course.js');
+
+let code = fs.readFileSync(SRC, 'utf8');
+if (code.startsWith('javascript:')) {
+  code = decodeURIComponent(code.slice('javascript:'.length));
+  console.log(`[test] 从书签地址解码：${SRC}`);
+} else {
+  console.log(`[test] 从源码读取：${SRC}`);
+}
 
 // ---------- 假数据：17 条，其中 2 条未开始 ----------
 const items = [];
