@@ -11,7 +11,7 @@ import pathlib
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
-from get_media import probe  # noqa: E402
+from get_media import probe, resolve  # noqa: E402
 from lectures import (ROOT, already_done, labels_parts, load_urls,  # noqa: E402
                       label_of, session_key, target_paths, track_of)
 
@@ -21,6 +21,11 @@ def check_list(path):
     if not urls:
         print(f"  （{pathlib.Path(path).name} 没有地址，跳过）\n")
         return 0
+
+    # 间接地址先换成直链，否则解析不出日期/时段
+    if any("previewToken=" in u for u in urls):
+        print(f"  换成直链 {len(urls)} 条 ...")
+        urls = [resolve(u) for u in urls]
 
     course = pathlib.Path(path).stem
     outdir = ROOT / "media" / course

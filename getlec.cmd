@@ -72,6 +72,8 @@ REM ===========================================================
 echo [getlec] BATCH mode over %ROOT%\lists
 echo.
 set "CNT=0"
+REM pick up lists exported by the browser scraper (Downloads)
+"%PY%" "%ROOT%\tools\import_lists.py"
 "%PY%" "%ROOT%\tools\lists.py"
 if errorlevel 1 goto done
 for /f "delims=" %%L in ('dir /b /o-n "%ROOT%\lists\*.txt" 2^>nul') do call :run_one "%ROOT%\lists\%%L"

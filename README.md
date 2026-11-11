@@ -30,6 +30,8 @@
 |---|---|
 | **一科一个清单** | `lists\计网.txt` → 落到 `media\计网\`，清单名即课程名 |
 | **增量下载** | 重跑时本地已有的节**整节跳过**：不联网探测、不重抽音轨 |
+| **自动抓取清单** | 浏览器里跑一段脚本，整门课 20+ 节地址一次导出（见下文） |
+| **间接地址自动换直链** | 清单里可以直接写 `previewToken` 地址，下载时自动换成签名直链 |
 | 批量下载 | 一份清单里放 N 个地址，一次跑完 |
 | 断点续传 | 中断后重跑，从断点继续，不重下 |
 | 自动抽音轨 | 音频流**直接复制**成 m4a，零重编码、零音质损失 |
@@ -162,6 +164,71 @@ D:\course-notes\getlec.cmd lists\计网.txt INSTRUCTOR
 **解决**：勾 **「禁用缓存」** → `F5` → 再点播放。或者把进度条拖到中间，强制触发新请求。
 
 > ⚠️ 一定要**看到媒体请求再复制**，否则复制不到东西。
+
+---
+
+## 自动化：整门课一次抓取（可选）
+
+手动一节节复制地址，20 节就要点 20 次。这一节讲怎么一次拿完整门课。
+
+### 链路与权限（已实测）
+
+| 步骤 | 接口 | 要登录？ |
+|---|---|---|
+| 1. 列出课程节次 | 课程页 / 页面 DOM | ✅ 要 |
+| 2. 取每节的回放轨地址 | `GET /api/activities/<activityId>` | ✅ 要 |
+| 3. 换成签名直链 | `incast.../preview?previewToken=` → **302** | ❌ 不要 |
+| 4. 下载 | `ilesson.../ENCODER-...?ts=&token=` | ❌ 不要 |
+
+**结论：只有前两步需要你的登录态。** 所以在浏览器里跑一小段脚本收集地址，其余全交给本地程序。
+
+### 用法
+
+1. 打开这门课的「直播/回放」列表页（地址形如 `/course/26384/live-activities`），等列表加载出来
+2. `F12` → **Sources** → 左侧 `>>` → **代码片段** → **新建代码片段**
+3. 把 `tools\scrape_course.js` 的内容**全部**粘进去
+4. `Ctrl+Enter` 运行
+5. 弹框里填课程名（默认取页面标题），选"是否导出三条轨"（选**取消**=只导 ENCODER）
+6. 浏览器会下载 `<课程名>.txt`
+7. 双击 `getlec.cmd` —— 它会**自动把下载文件夹里的清单收进 `lists\`** 并开始下载
+
+所以完整流程变成：**点一下脚本 → 双击一次**，整门课就排队下完了。
+
+### 清单里存的是什么
+
+`scrape_course.js` 导出的是 `previewToken` 地址（不是最终的签名地址）：
+
+```
+# 2026-11-09T02:10:00+00:00 2026-11-09-计算机网络与系统
+https://incast.wh.bjtu.edu.cn/api/base/orgs/bjtu/captures/<hash>/videos/280740/preview?previewToken=xxx
+```
+
+本地程序在下载前会把它换成签名直链，日志里能看到：
+
+```text
+[resolve] 发现间接地址，换成直链（1 条）...
+  ...preview?previewToken=bbe5  ->  ...ENCODER-xxx?ts=1794406520&token=d4f2
+```
+
+### 已知限制
+
+`scrape_course.js` 从**页面 DOM** 里收集 activityId。如果列表是分页加载的，可能只抓当前页。
+
+真遇到抓不全，就需要再多一个「课程 → 全部节次」的列表接口（导出一次课程页 HAR 即可定位）。目前 20 节量级通常一页能装下。
+
+### 自动收编下载的清单
+
+浏览器导出的 txt 落在「下载」文件夹，`getlec.cmd` 启动时会自动调用：
+
+```bat
+python D:\course-notes\tools\import_lists.py
+```
+
+它扫描 `%USERPROFILE%\Downloads` 里含 `previewToken` 的 txt，按文件名合并进 `lists\<课程名>.txt`（URL 去重），并把源文件移走。也可以手动指定目录：
+
+```bat
+python D:\course-notes\tools\import_lists.py --downloads D:\some\dir --dry-run
+```
 
 ---
 
@@ -463,10 +530,12 @@ D:\course-notes\                          ← 整个文件夹可搬到任意位�
 ├─ bin\
 │  ├─ ffmpeg.exe             9.0.2
 │  └─ ffprobe.exe
-├─ tools\                    8 个脚本，约 800 行
-│  ├─ get_media.py           请求头基线 + 探活 + 分块下载
-│  ├─ lectures.py            主编排：下载→抽音轨→命名→归档→刷索引
+├─ tools\                    10 个脚本
+│  ├─ get_media.py           请求头基线 + 探活 + 分块下载 + resolve 间接地址
+│  ├─ lectures.py            主编排：解析→下载→抽音轨→命名→归档→刷索引
 │  ├─ lists.py               列出待下载清单 / 空清单指引
+│  ├─ import_lists.py        收编浏览器导出的抓取清单
+│  ├─ scrape_course.js       浏览器里跑的整门课抓取脚本
 │  ├─ check_urls.py          下载前预检
 │  ├─ make_index.py          生成已下载清单
 │  ├─ test_naming.py         命名测试（8 项）

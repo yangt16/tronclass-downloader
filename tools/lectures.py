@@ -21,7 +21,7 @@ import sys
 import time
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
-from get_media import download  # noqa: E402
+from get_media import download, resolve  # noqa: E402
 
 try:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -265,6 +265,21 @@ def main():
         # 空清单是正常状态（比如先建好文件、之后再粘地址），不算失败
         print(f"  {a.urls} 里没有可用地址，跳过")
         return 0
+
+    # 清单里可能是「间接地址」（incast 的 preview?previewToken=...）。
+    # 它 302 到真正的签名直链，这个跳转不需要登录态，本地就能换。
+    # 换过之后 URL 里才带日期/时段/轨道，才能命名和分组。
+    if any("previewToken=" in u for u in urls):
+        print(f"[resolve] 发现间接地址，换成直链（{len(urls)} 条）...")
+        fixed = []
+        for u in urls:
+            r = resolve(u)
+            if r != u:
+                print(f"  {u[-42:]}  ->  {r[-46:]}")
+            else:
+                print(f"  {u[-42:]}  ->  (未变化，可能已过期)")
+            fixed.append(r)
+        urls = fixed
 
     groups = {}
     for u in urls:

@@ -49,6 +49,43 @@ def probe(url, timeout=60):
         return False, 0, f"{type(e).__name__} {str(e)[:60]}"
 
 
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, *a, **kw):
+        return None
+
+
+# 手动构造 opener：既要禁止自动跟随 302（我们要读 Location），
+# 又要带上不校验证书的 HTTPSHandler（校园证书链不被系统信任）。
+# 注意 OpenerDirector.open() 不接受 context 参数，只能这样注入。
+_OPENER_NOREDIR = urllib.request.build_opener(
+    _NoRedirect, urllib.request.HTTPSHandler(context=CTX))
+
+
+def resolve(url, timeout=40):
+    """把「间接地址」换成真正的媒体直链。
+
+    incast 的 .../videos/<cameraId>/preview?previewToken=xxx 会 302 跳到
+    ilesson 的签名地址（?ts=&token=）。这个 302 端点不需要登录态，
+    所以本地程序可以自己换。已经是直链的地址原样返回。
+    """
+    if "previewToken=" not in url:
+        return url
+    req = urllib.request.Request(url, headers=BASE_HEADERS)
+    try:
+        r = _OPENER_NOREDIR.open(req, timeout=timeout)
+        loc = r.headers.get("Location")
+        r.close()
+        if loc:
+            return loc
+    except urllib.error.HTTPError as e:
+        loc = e.headers.get("Location")
+        if loc:
+            return loc
+    except Exception:
+        pass
+    return url
+
+
 def download(url, out_path):
     """按块下载到 out_path，已存在的部分会续传。"""
     out = Path(out_path)
