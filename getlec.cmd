@@ -49,6 +49,10 @@ set "DRYARG="
 if "%GETLEC_DRYRUN%"=="1" set "DRYARG=--dry-run"
 set "DROPARG="
 if "%GETLEC_DROPVIDEO%"=="1" set "DROPARG=--drop-video"
+set "KEEPARG="
+if "%GETLEC_KEEPLIST%"=="1" set "KEEPARG=--keep-list"
+set "FORCEARG="
+if "%GETLEC_FORCE%"=="1" set "FORCEARG=--force"
 
 if not "%TRACK%"=="" goto hafetrack
 set "TRACK=ENCODER"
@@ -86,7 +90,7 @@ echo ============================================================
 echo [getlec] LIST %LIST%
 echo [getlec] track=%TRACK%
 echo ============================================================
-"%PY%" "%ROOT%\tools\lectures.py" --urls "%LIST%" --track "%TRACK%" %DRYARG% %DROPARG%
+"%PY%" "%ROOT%\tools\lectures.py" --urls "%LIST%" --track "%TRACK%" %DRYARG% %DROPARG% %KEEPARG% %FORCEARG%
 if errorlevel 1 goto p_failed
 echo [getlec] OK
 echo.

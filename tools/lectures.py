@@ -235,6 +235,15 @@ def archive_list(urls_file, dates, outdir):
         print(f"[archive] 刷新清单失败: {e}")
 
 
+def already_done(mp4, m4a):
+    """本地已有完整产物 —— 只查文件系统，不联网。"""
+    try:
+        return (mp4.exists() and mp4.stat().st_size > 0
+                and m4a.exists() and m4a.stat().st_size > 0)
+    except Exception:
+        return False
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--urls", required=True, help="每行一个媒体地址的 txt")
@@ -242,6 +251,9 @@ def main():
     ap.add_argument("--dest", default="", help="落点，相对本程序或绝对路径")
     ap.add_argument("--drop-video", action="store_true", help="抽完音轨就删 mp4")
     ap.add_argument("--dry-run", action="store_true", help="只打印路径，不写盘")
+    ap.add_argument("--force", action="store_true", help="已下载的也重做")
+    ap.add_argument("--keep-list", action="store_true",
+                    help="跑完不动清单（不归档、不重建），适合长期维护的增量清单")
     a = ap.parse_args()
 
     # 落点由清单文件名决定：lists\计网.txt -> media\计网\
@@ -259,6 +271,7 @@ def main():
         groups.setdefault(session_key(u), []).append(u)
 
     done_dates, failed = [], 0
+    n_new = n_skip = 0
     for idx, (key, us) in enumerate(groups.items(), 1):
         label = label_of(us[0])
         print(f"\n=== 第 {idx}/{len(groups)} 节: {label}  轨: {[track_of(u) for u in us]} ===")
@@ -278,6 +291,13 @@ def main():
         guard_previous(outdir / date, label, course_name(outdir), date)
         mp4, m4a = target_paths(outdir, label)
 
+        # 增量下载的核心：本地已有完整产物就整节跳过，不联网、不重抽音轨
+        if not a.force and already_done(mp4, m4a):
+            print(f"  跳过（已下载）{mp4.name}")
+            n_skip += 1
+            done_dates.append(date)
+            continue
+
         print(f"  [下载] -> {mp4}")
         try:
             download(pick, mp4)
@@ -291,6 +311,7 @@ def main():
             failed += 1
             continue
         print(f"      {m4a.name}  {m4a.stat().st_size/1e6:.1f} MB")
+        n_new += 1
         if a.drop_video:
             freed = mp4.stat().st_size
             mp4.unlink()
@@ -301,8 +322,24 @@ def main():
         print(f"\n  上传用这个: {m4a}")
         done_dates.append(date)
 
+    if not a.dry_run:
+        print(f"\n[小结] 新下载 {n_new} 节 / 跳过 {n_skip} 节 / 失败 {failed} 节")
+
     if a.dry_run or failed or not done_dates:
         return 1 if failed else 0
+
+    if a.keep_list:
+        # 增量清单模式：清单原地保留，方便下周把新地址追加进来
+        print(f"[list] 保留清单不动: {a.urls}")
+        try:
+            import make_index
+            idx = make_index.rebuild(outdir)
+            if idx:
+                print(f"[list] 已刷新下载清单 {idx}")
+        except Exception:
+            pass
+        return 0
+
     archive_list(a.urls, done_dates, outdir)
     return 0
 
