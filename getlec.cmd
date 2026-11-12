@@ -49,6 +49,8 @@ set "DRYARG="
 if "%GETLEC_DRYRUN%"=="1" set "DRYARG=--dry-run"
 set "DROPARG="
 if "%GETLEC_DROPVIDEO%"=="1" set "DROPARG=--drop-video"
+set "NOAUDIOARG="
+if "%GETLEC_NOAUDIO%"=="1" set "NOAUDIOARG=--no-audio"
 set "KEEPARG="
 if "%GETLEC_KEEPLIST%"=="1" set "KEEPARG=--keep-list"
 set "FORCEARG="
@@ -92,7 +94,7 @@ echo ============================================================
 echo [getlec] LIST %LIST%
 echo [getlec] track=%TRACK%
 echo ============================================================
-"%PY%" "%ROOT%\tools\lectures.py" --urls "%LIST%" --track "%TRACK%" %DRYARG% %DROPARG% %KEEPARG% %FORCEARG%
+"%PY%" "%ROOT%\tools\lectures.py" --urls "%LIST%" --track "%TRACK%" %DRYARG% %DROPARG% %NOAUDIOARG% %KEEPARG% %FORCEARG%
 if errorlevel 1 goto p_failed
 echo [getlec] OK
 echo.

@@ -245,13 +245,28 @@ def archive_list(urls_file, dates, outdir):
         print(f"[archive] 刷新清单失败: {e}")
 
 
-def already_done(mp4, m4a):
-    """本地已有完整产物 —— 只查文件系统，不联网。"""
-    try:
-        return (mp4.exists() and mp4.stat().st_size > 0
-                and m4a.exists() and m4a.stat().st_size > 0)
-    except Exception:
-        return False
+def already_done(mp4, m4a, mode="both"):
+    """本地已有完整产物 —— 只查文件系统，不联网。
+
+    mode 决定"完成"的标准：
+      both  : mp4 + m4a 都在（默认）
+      audio : 只有 m4a（音轨模式跑完会删掉 mp4）
+      video : 只有 mp4（只要视频模式不抽音轨）
+      any   : 任一个在（给预检用，判断"这节碰过没"）
+    """
+    def ok(p):
+        try:
+            return p.exists() and p.stat().st_size > 0
+        except Exception:
+            return False
+
+    if mode == "audio":
+        return ok(m4a)
+    if mode == "video":
+        return ok(mp4)
+    if mode == "any":
+        return ok(m4a) or ok(mp4)
+    return ok(mp4) and ok(m4a)
 
 
 def main():
@@ -260,6 +275,7 @@ def main():
     ap.add_argument("--track", default="ENCODER", help="ENCODER / INSTRUCTOR / STUDENTS")
     ap.add_argument("--dest", default="", help="落点，相对本程序或绝对路径")
     ap.add_argument("--drop-video", action="store_true", help="抽完音轨就删 mp4")
+    ap.add_argument("--no-audio", action="store_true", help="只要视频，不抽音轨")
     ap.add_argument("--dry-run", action="store_true", help="只打印路径，不写盘")
     ap.add_argument("--force", action="store_true", help="已下载的也重做")
     ap.add_argument("--keep-list", action="store_true",
@@ -293,6 +309,11 @@ def main():
 
     groups = group_by_label(urls)
 
+    # 三种模式：都要 / 只要音轨 / 只要视频
+    mode = "video" if a.no_audio else ("audio" if a.drop_video else "both")
+    mode_cn = {"both": "视频 + 音轨", "audio": "只要音轨", "video": "只要视频"}[mode]
+    print(f"[mode] {mode_cn}")
+
     done_dates, failed = [], 0
     n_new = n_skip = 0
     for idx, (key, us) in enumerate(groups.items(), 1):
@@ -306,8 +327,11 @@ def main():
         date = labels_parts(label)[0]
         if a.dry_run:
             mp4, m4a = target_paths(outdir, label)
-            print(f"  将写入: {mp4}")
-            print(f"          {m4a}")
+            if mode == "video":
+                print(f"  将写入: {mp4}")
+            else:
+                print(f"  将写入: {mp4}")
+                print(f"          {m4a}")
             continue
 
         outdir.mkdir(parents=True, exist_ok=True)
@@ -315,8 +339,8 @@ def main():
         mp4, m4a = target_paths(outdir, label)
 
         # 增量下载的核心：本地已有完整产物就整节跳过，不联网、不重抽音轨
-        if not a.force and already_done(mp4, m4a):
-            print(f"  跳过（已下载）{mp4.name}")
+        if not a.force and already_done(mp4, m4a, mode):
+            print(f"  跳过（已下载）{mp4.name if mode != 'audio' else m4a.name}")
             n_skip += 1
             done_dates.append(date)
             continue
@@ -327,6 +351,16 @@ def main():
         except Exception as e:
             print(f"  下载失败: {e}")
             failed += 1
+            continue
+
+        if mode == "video":
+            # 只要视频：不抽音轨，直接收工
+            n_new += 1
+            print(f"      视频 {mp4.name}  {mp4.stat().st_size/1e6:.1f} MB")
+            print("  [信息]")
+            print("      " + info_of(mp4).replace("\n", "\n      "))
+            print(f"\n  视频用这个: {mp4}")
+            done_dates.append(date)
             continue
 
         print(f"  [抽音频] -> {m4a.name}")

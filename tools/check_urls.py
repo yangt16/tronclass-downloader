@@ -43,7 +43,7 @@ def check_list(path):
         multi = (outdir / date / ".multi").exists()
         base = f"{course}_{date}" + (f"_{span}" if multi and span else "")
         mp4, m4a = target_paths(outdir, label)
-        if already_done(mp4, m4a):
+        if already_done(mp4, m4a, "any"):
             # 已下载的节不再探测：长期清单里旧地址多半已过期，探测只会刷假的失败
             print(f"[已下载] {'':>10}  {course}\\{date}\\{base}.mp4  ({track_of(us[0])})")
             done += 1

@@ -98,12 +98,23 @@ python D:\course-notes\tools\check_urls.py
 
 有 `[FAIL]` 就重新复制那一条。
 
-### 4. 双击 `getlec.cmd`
+### 4. 双击三个入口之一
+
+根目录有三个入口，**区别只在"留什么产物"**：
+
+| 入口 | 产物 | 单节占用 | 适合 |
+|---|---|---|---|
+| **下视频和音频.cmd** | mp4 + m4a | ~750 MB | 要转写也要看画面（默认） |
+| **只要音轨.cmd** | 只留 m4a（下完删 mp4） | ~110 MB | **只做转写，省 6.6 倍空间** |
+| **只要视频.cmd** | 只留 mp4（不抽音轨） | ~640 MB | 只要录像，音频另想办法 |
+
+三个入口都支持"双击跑全部清单"和"拖一个 txt 进去只跑它"。
 
 ```
 [lists] 待下载清单 1 个:
     计网.txt      1 条地址 -> media\计网\
 [getlec] LIST D:\course-notes\lists\计网.txt
+[mode] 视频 + 音轨
 [dest] 落点: D:\course-notes\media\计网
 
 === 第 1/1 节: 20260921_101000-120500  轨: ['ENCODER'] ===
@@ -322,14 +333,17 @@ media\<清单名>\
 ### 批量（最常用）
 
 ```bat
-:: 处理 lists\ 下所有带地址的清单
-D:\course-notes\getlec.cmd
+:: 处理 lists\ 下所有带地址的清单（默认：视频 + 音轨都留）
+D:\course-notes\下视频和音频.cmd
 
-:: 同上（显式）
-D:\course-notes\getlec.cmd --all
+:: 只要音轨（省空间，适合转写）
+D:\course-notes\只要音轨.cmd
 
-:: 只处理一份清单
-D:\course-notes\getlec.cmd lists\计网.txt
+:: 只要视频（不抽音轨）
+D:\course-notes\只要视频.cmd
+
+:: 只处理一份清单（把路径拖到 .cmd 上，或直接写）
+D:\course-notes\只要音轨.cmd lists\计网.txt
 
 :: 换轨
 D:\course-notes\getlec.cmd lists\计网.txt INSTRUCTOR
@@ -350,8 +364,12 @@ python D:\course-notes\tools\lists.py
 :: 刷新已下载索引
 python D:\course-notes\tools\make_index.py
 
-:: 抽完音轨就删录像
+:: 抽完音轨就删录像（等价于「只要音轨.cmd」）
 set GETLEC_DROPVIDEO=1
+D:\course-notes\getlec.cmd
+
+:: 只要视频（等价于「只要视频.cmd」）
+set GETLEC_NOAUDIO=1
 D:\course-notes\getlec.cmd
 ```
 
@@ -359,7 +377,8 @@ D:\course-notes\getlec.cmd
 
 | 变量 | 作用 |
 |---|---|
-| `GETLEC_DROPVIDEO=1` | 抽完音轨后删除 mp4 |
+| `GETLEC_DROPVIDEO=1` | 抽完音轨后删除 mp4（只要音轨） |
+| `GETLEC_NOAUDIO=1` | 不抽音轨（只要视频） |
 | `GETLEC_DRYRUN=1` | 整条流程走一遍但只打印路径、不下载不写盘 |
 | `GETLEC_KEEPLIST=1` | 跑完**不归档、不重建**清单，适合长期维护的增量清单 |
 | `GETLEC_FORCE=1` | 已下载的也重做（强制覆盖） |
@@ -376,7 +395,8 @@ D:\course-notes\getlec.cmd
 | `--urls <file>` | **必填**，清单路径。落点由文件名决定 |
 | `--track <名>` | `ENCODER`（默认）/ `INSTRUCTOR` / `STUDENTS` |
 | `--dest <路径>` | 覆盖落点（相对本程序或绝对路径），一般不用 |
-| `--drop-video` | 抽完音轨删 mp4 |
+| `--drop-video` | 抽完音轨删 mp4（只要音轨） |
+| `--no-audio` | 不抽音轨（只要视频） |
 | `--dry-run` | 只打印路径，不联网、不建目录 |
 | `--force` | 已下载的也重做 |
 | `--keep-list` | 跑完不归档/不重建清单 |
@@ -578,7 +598,10 @@ PowerShell 的 `Set-Content -Encoding UTF8` 可能写入 BOM。Python 用普通 
 
 ```text
 D:\course-notes\                          ← 整个文件夹可搬到任意位置
-├─ getlec.cmd                唯一入口（双击）
+├─ 下视频和音频.cmd          ★ 入口：视频 + 音轨（默认）
+├─ 只要音轨.cmd              ★ 入口：只留 m4a
+├─ 只要视频.cmd              ★ 入口：只留 mp4
+├─ getlec.cmd                主脚本（三个入口都调用它）
 ├─ README.md                 本文档
 ├─ bin\
 │  ├─ ffmpeg.exe             9.0.2
@@ -592,7 +615,8 @@ D:\course-notes\                          ← 整个文件夹可搬到任意位�
 │  ├─ build_bookmarklet.js   把上面那个编译成书签 + 安装页（需 Node）
 │  ├─ check_urls.py          下载前预检
 │  ├─ make_index.py          生成已下载清单
-│  ├─ test_naming.py         命名测试（8 项）
+│  ├─ test_naming.py         命名/分组测试（11 项）
+│  ├─ test_modes.py          三种模式判定测试（18 项）
 │  ├─ test_cmd_ascii.py      .cmd 规范校验
 │  └─ test_base_headers.py   请求头回归
 ├─ dist\                     ★ 抓取书签（install.html 拖拽安装）
