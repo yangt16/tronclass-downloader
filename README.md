@@ -79,8 +79,10 @@ media\XX课程\20260921\
 | 依赖 | 状态 |
 |---|---|
 | Python 3.8+ | 需要（自动探测：`python\python.exe` → PATH 的 `python` → `py -3`） |
-| ffmpeg 9.0.2 | **已就位**：`bin\ffmpeg.exe` + `bin\ffprobe.exe` |
+| ffmpeg | **首次使用双击 `setup.cmd` 自动下载**（约 200 MB，装进 `bin\`），也可以手动放 |
 | 网络 | 能直连校内 TronClass，不需要 VPN |
+
+> 第一次用（或换了新机器）：双击 **`setup.cmd`** —— 它会找 Python、下载 ffmpeg、建好 `lists\`。
 
 程序用自身所在目录做根目录，整个文件夹可搬到任意位置。
 
@@ -90,13 +92,14 @@ media\XX课程\20260921\
 
 ```text
 D:\course-notes\
+├─ setup.cmd              ★ 首次使用：补齐 ffmpeg + 建 lists\
 ├─ 下视频和音频.cmd       ★ 入口：视频 + 音轨
 ├─ 只要音轨.cmd           ★ 入口：只留 m4a
 ├─ 只要视频.cmd           ★ 入口：只留 mp4
 ├─ getlec.cmd             主脚本（三个入口都调用它）
 ├─ docs\使用说明.md       完整使用手册
 ├─ bin\                   ffmpeg / ffprobe
-├─ tools\                 13 个脚本（下载、编排、抓取、测试）
+├─ tools\                 16 个脚本（下载、编排、抓取、测试）
 ├─ dist\                  抓取书签（install.html 拖拽安装）
 ├─ lists\                 ★ 在这里建 <科目>.txt
 ├─ media\                 ★ 下载产物
