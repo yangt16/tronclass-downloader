@@ -26,6 +26,29 @@
 
 ---
 
+## 部署（拿到程序）
+
+### 方式 1：Release 包（推荐给不用命令行的同学）
+
+打开 [Releases](https://github.com/yangt16/tronclass-downloader/releases/latest)，
+下载 `tronclass-downloader-v3-win64.zip`（约 220 MB，**已内置 ffmpeg**）→ 解压 →
+双击 `setup.cmd`（会秒过，因为 ffmpeg 已就位）。
+
+### 方式 2：有 Git，一行命令
+
+```bat
+git clone --depth 1 https://github.com/yangt16/tronclass-downloader.git && cd tronclass-downloader && setup.cmd
+```
+
+### 方式 3：没有 Git
+
+浏览器打开仓库页 → `Code` → `Download ZIP` → 解压 → 双击 `setup.cmd`
+（这个包不含 ffmpeg，setup 会下载约 200 MB）。
+
+**前置条件**：Windows + Python 3.8+（没有就先装，或把免安装版解压成 `python\`）。
+
+---
+
 ## 快速开始
 
 ### 1. 建清单
