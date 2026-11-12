@@ -92,10 +92,6 @@ def template_for(course):
 
 # ---------------- 地址与命名 ---------------- #
 
-def session_key(url):
-    """同一次课的多条轨共用同一个目录，用它分组。"""
-    return url.rsplit("/", 1)[0]
-
 
 def label_of(url):
     """从 .../<日期>/<HHMMSS-HHMMSS-id>/<file> 取出 'YYYYMMDD_HHMMSS-HHMMSS'。"""
@@ -106,6 +102,20 @@ def label_of(url):
         return f"{date}_{span[0]}-{span[1]}"
     except Exception:
         return "lecture"
+
+
+def group_by_label(urls):
+    """按「日期+时段」分组，而不是按完整目录。
+
+    为什么不能用目录分组：同一节课的三条轨可能被存在**不同目录**里
+    （实测：20261111 / 20261023 / 20261106 的 INSTRUCTOR/STUDENTS 就在
+    另一个目录下），按目录分会把一节课裂成两组，白白多跑一轮。
+    日期+时段是这一节课的稳定标识。
+    """
+    groups = {}
+    for u in urls:
+        groups.setdefault(label_of(u), []).append(u)
+    return groups
 
 
 def track_of(url):
@@ -281,9 +291,7 @@ def main():
             fixed.append(r)
         urls = fixed
 
-    groups = {}
-    for u in urls:
-        groups.setdefault(session_key(u), []).append(u)
+    groups = group_by_label(urls)
 
     done_dates, failed = [], 0
     n_new = n_skip = 0

@@ -13,7 +13,7 @@ import sys
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
 from get_media import probe, resolve  # noqa: E402
 from lectures import (ROOT, already_done, labels_parts, load_urls,  # noqa: E402
-                      label_of, session_key, target_paths, track_of)
+                      group_by_label, label_of, target_paths, track_of)
 
 
 def check_list(path):
@@ -31,9 +31,7 @@ def check_list(path):
     outdir = ROOT / "media" / course
     print(f"落点: {outdir}\n")
 
-    groups = {}
-    for u in urls:
-        groups.setdefault(session_key(u), []).append(u)
+    groups = group_by_label(urls)
 
     bad = 0
     done = 0

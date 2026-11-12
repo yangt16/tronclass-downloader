@@ -10,7 +10,7 @@ import shutil
 import sys
 
 sys.path.insert(0, r"D:\course-notes\tools")
-from lectures import guard_previous, target_paths  # noqa: E402
+from lectures import group_by_label, guard_previous, target_paths  # noqa: E402
 
 try:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -78,6 +78,32 @@ out, day = setup("bom")
 (day / ".session").write_bytes(b"\xef\xbb\xbf" + L1.encode())
 guard_previous(day, L1, COURSE, "20261014")
 check("BOM 同课时", not (day / ".multi").exists(), names(day))
+
+# 5) 分组：三条轨目录相同 -> 1 组
+base = "https://i/videos/o/bjtu/Room/20261111/080000-095500-1/"
+u1 = [
+    base + "ENCODER-abc?ts=1&token=x",
+    base + "STUDENTS-abc?ts=1&token=x",
+    base + "INSTRUCTOR-abc?ts=1&token=x",
+]
+g = group_by_label(u1)
+check("分组 同目录", len(g) == 1 and len(next(iter(g.values()))) == 3, list(g))
+
+# 6) 分组：三条轨里有一条在**不同目录**（实测发生过）-> 仍应是 1 组
+u2 = [
+    base + "ENCODER-abc?ts=1&token=x",
+    base + "STUDENTS-abc?ts=1&token=x",
+    "https://i/videos/o/bjtu/Room/20261111/080000-095500-2/INSTRUCTOR-abc?ts=1&token=x",
+]
+g = group_by_label(u2)
+check("分组 跨目录同节", len(g) == 1 and len(next(iter(g.values()))) == 3, list(g))
+
+# 7) 分组：不同日期 -> 2 组
+u3 = [
+    base + "ENCODER-abc?ts=1&token=x",
+    "https://i/videos/o/bjtu/Room/20261112/080000-095500-1/ENCODER-abc?ts=1&token=x",
+]
+check("分组 不同日期", len(group_by_label(u3)) == 2, list(group_by_label(u3)))
 
 shutil.rmtree(BASE, ignore_errors=True)
 print("\n全部通过" if bad == 0 else f"\n{bad} 项失败")
