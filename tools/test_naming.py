@@ -3,13 +3,16 @@
 输出目录结构必须模拟真实布局: <root>\\XX课程\\<日期>\\...
 course_name() 取落点目录的末级名，所以落点必须是「XX课程」这一层。
 
+路径全部由本文件位置推导，整个文件夹搬到哪都能跑。
 不用 tempfile —— 它落在系统 TEMP（工作区外），会被沙箱拒。
 """
 import pathlib
 import shutil
 import sys
 
-sys.path.insert(0, r"D:\course-notes\tools")
+HERE = pathlib.Path(__file__).resolve().parent
+ROOT = HERE.parent
+sys.path.insert(0, str(HERE))
 from lectures import group_by_label, guard_previous, target_paths  # noqa: E402
 
 try:
@@ -18,7 +21,7 @@ except Exception:
     pass
 
 COURSE = "XX课程"
-BASE = pathlib.Path(r"D:\course-notes\tmp\nametest")
+BASE = ROOT / "tmp" / "nametest"
 L1 = "20261014_150100-160500"
 L2 = "20261014_162000-181500"
 L3 = "20261014_190000-200000"
