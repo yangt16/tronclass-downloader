@@ -118,6 +118,54 @@ def group_by_label(urls):
     return groups
 
 
+def parse_specs(values):
+    """把 --only / --exclude 的值拆成列表。
+
+    支持重复传参（--only A --only B）和逗号分隔（--only A,B），
+    中文逗号也认。空值忽略。
+    """
+    out = []
+    for v in values or []:
+        for part in str(v).replace("，", ",").split(","):
+            part = part.strip()
+            if part and part not in out:
+                out.append(part)
+    return out
+
+
+def match_label(label, specs):
+    """label 是否命中任一 spec。
+
+    spec 可以是：
+      * 日期       20261030         -> 命中这一天的所有节
+      * 完整标签   20261030_101000-120500
+      * 前缀       20261030_10      -> 命中当天 10 点档
+    """
+    date = label.split("_")[0]
+    for s in specs:
+        if label.startswith(s) or date == s:
+            return True
+    return False
+
+
+def filter_groups(groups, only, exclude):
+    """按日期/标签筛选。返回 (新 groups, 说明文字)。"""
+    before = len(groups)
+    if only:
+        groups = {k: v for k, v in groups.items() if match_label(k, only)}
+    if exclude:
+        groups = {k: v for k, v in groups.items() if not match_label(k, exclude)}
+    note = ""
+    if only or exclude:
+        bits = []
+        if only:
+            bits.append("只要 " + ",".join(only))
+        if exclude:
+            bits.append("排除 " + ",".join(exclude))
+        note = f"{'；'.join(bits)}：{before} 节 -> {len(groups)} 节"
+    return groups, note
+
+
 def track_of(url):
     """从 <TRACK>-<b64>?ts=... 认出是哪条轨。"""
     name = url.split("?")[0].rsplit("/", 1)[-1]
@@ -280,6 +328,10 @@ def main():
     ap.add_argument("--force", action="store_true", help="已下载的也重做")
     ap.add_argument("--keep-list", action="store_true",
                     help="跑完不动清单（不归档、不重建），适合长期维护的增量清单")
+    ap.add_argument("--only", action="append", default=[], metavar="日期",
+                    help="只下指定的日期/标签，可重复或用逗号分隔，如 20261030 或 20261030_10")
+    ap.add_argument("--exclude", action="append", default=[], metavar="日期",
+                    help="跳过指定的日期/标签，写法同 --only")
     a = ap.parse_args()
 
     # 落点由清单文件名决定：lists\X.txt -> media\X\
@@ -308,6 +360,20 @@ def main():
         urls = fixed
 
     groups = group_by_label(urls)
+
+    # 按日期/标签筛选（--only / --exclude）
+    only_specs = parse_specs(a.only)
+    excl_specs = parse_specs(a.exclude)
+    if only_specs or excl_specs:
+        groups, note = filter_groups(groups, only_specs, excl_specs)
+        print(f"[filter] {note}")
+        if not groups:
+            print("[filter] 没有符合条件的节。检查日期是否写对（形如 20261030）")
+            return 0
+        # 筛选模式下绝不归档清单：否则会把没处理的那些地址一起搬走
+        if not a.keep_list:
+            a.keep_list = True
+            print("[filter] 已自动开启 --keep-list（筛选时不归档清单）")
 
     # 三种模式：都要 / 只要音轨 / 只要视频
     mode = "video" if a.no_audio else ("audio" if a.drop_video else "both")

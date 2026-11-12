@@ -55,6 +55,10 @@ set "KEEPARG="
 if "%GETLEC_KEEPLIST%"=="1" set "KEEPARG=--keep-list"
 set "FORCEARG="
 if "%GETLEC_FORCE%"=="1" set "FORCEARG=--force"
+set "ONLYARG="
+if not "%GETLEC_ONLY%"=="" set "ONLYARG=--only %GETLEC_ONLY%"
+set "EXCLARG="
+if not "%GETLEC_EXCLUDE%"=="" set "EXCLARG=--exclude %GETLEC_EXCLUDE%"
 
 if not "%TRACK%"=="" goto hafetrack
 set "TRACK=ENCODER"
@@ -94,7 +98,7 @@ echo ============================================================
 echo [getlec] LIST %LIST%
 echo [getlec] track=%TRACK%
 echo ============================================================
-"%PY%" "%ROOT%\tools\lectures.py" --urls "%LIST%" --track "%TRACK%" %DRYARG% %DROPARG% %NOAUDIOARG% %KEEPARG% %FORCEARG%
+"%PY%" "%ROOT%\tools\lectures.py" --urls "%LIST%" --track "%TRACK%" %DRYARG% %DROPARG% %NOAUDIOARG% %KEEPARG% %FORCEARG% %ONLYARG% %EXCLARG%
 if errorlevel 1 goto p_failed
 echo [getlec] OK
 echo.
