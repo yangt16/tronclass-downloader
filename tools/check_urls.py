@@ -5,7 +5,7 @@ check_urls.py - 下载前预检：逐条验证地址是否还有效，并预览�
 
 用法:
     python check_urls.py                # 预检 lists\\ 下所有清单
-    python check_urls.py lists\\计网.txt  # 只预检这一份
+    python check_urls.py lists\\X.txt  # 只预检这一份
 """
 import pathlib
 import sys

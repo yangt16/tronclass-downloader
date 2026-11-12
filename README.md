@@ -28,7 +28,7 @@
 
 | 能力 | 说明 |
 |---|---|
-| **一科一个清单** | `lists\计网.txt` → 落到 `media\计网\`，清单名即课程名 |
+| **一科一个清单** | `lists\XX课程.txt` → 落到 `media\XX课程\`，清单名即课程名 |
 | **增量下载** | 重跑时本地已有的节**整节跳过**：不联网探测、不重抽音轨 |
 | **自动抓取清单** | 浏览器里跑一段脚本，整门课 20+ 节地址一次导出（见下文） |
 | **间接地址自动换直链** | 清单里可以直接写 `previewToken` 地址，下载时自动换成签名直链 |
@@ -62,13 +62,13 @@
 
 ### 1. 在 `lists\` 里建一个清单文件
 
-**文件名 = 课程名**。比如下计算机网络，就建：
+**文件名 = 课程名**。比如下XX课程，就建：
 
 ```
-D:\course-notes\lists\计网.txt
+D:\course-notes\lists\XX课程.txt
 ```
 
-不需要先建 `media\计网\` —— 程序会自己建。
+不需要先建 `media\XX课程\` —— 程序会自己建。
 
 ### 2. 把播放地址粘进去
 
@@ -88,12 +88,12 @@ python D:\course-notes\tools\check_urls.py
 输出：
 
 ```text
-[计网.txt]
-落点: D:\course-notes\media\计网
+[XX课程.txt]
+落点: D:\course-notes\media\XX课程
 
 状态               大小  落点
 --------------------------------------------------------------------
-[OK]   1000.2 MB  计网\20260921\计网_20260921.mp4  (ENCODER)
+[OK]   1000.2 MB  XX课程\20260921\XX课程_20260921.mp4  (ENCODER)
 ```
 
 有 `[FAIL]` 就重新复制那一条。
@@ -112,27 +112,27 @@ python D:\course-notes\tools\check_urls.py
 
 ```
 [lists] 待下载清单 1 个:
-    计网.txt      1 条地址 -> media\计网\
-[getlec] LIST D:\course-notes\lists\计网.txt
+    XX课程.txt      1 条地址 -> media\XX课程\
+[getlec] LIST D:\course-notes\lists\XX课程.txt
 [mode] 视频 + 音轨
-[dest] 落点: D:\course-notes\media\计网
+[dest] 落点: D:\course-notes\media\XX课程
 
 === 第 1/1 节: 20260921_101000-120500  轨: ['ENCODER'] ===
-  [下载] -> ...\计网_20260921.mp4
-  [抽音频] -> 计网_20260921.m4a
+  [下载] -> ...\XX课程_20260921.mp4
+  [抽音频] -> XX课程_20260921.m4a
   [信息]
-  上传用这个: ...\计网_20260921.m4a
+  上传用这个: ...\XX课程_20260921.m4a
 [archive] 地址清单已归档 -> urls_20260921.txt
-[archive] 已重建空清单 lists\计网.txt
-[archive] 已刷新下载清单 lists\计网.md
+[archive] 已重建空清单 lists\XX课程.txt
+[archive] 已刷新下载清单 lists\XX课程.md
 ```
 
 产物：
 
 ```text
-media\计网\20260921\
-├─ 计网_20260921.mp4    1000.2 MB   录像
-└─ 计网_20260921.m4a     111.5 MB   音轨  ← 传千问用这个
+media\XX课程\20260921\
+├─ XX课程_20260921.mp4    1000.2 MB   录像
+└─ XX课程_20260921.m4a     111.5 MB   音轨  ← 传千问用这个
 ```
 
 ---
@@ -165,7 +165,7 @@ media\计网\20260921\
 只有转写效果明显很差时才换：
 
 ```bat
-D:\course-notes\getlec.cmd lists\计网.txt INSTRUCTOR
+D:\course-notes\getlec.cmd lists\XX课程.txt INSTRUCTOR
 ```
 
 ### 常见坑：列表里没有媒体请求
@@ -238,7 +238,7 @@ GET /api/activities/<activityId>
 
 ### 课程还在进行：每周重跑一次脚本
 
-课程没上完时，列表会逐周变长（例如计网 17 → 19 → 21 条）。**不需要任何特殊操作**，每周重复同一步：
+课程没上完时，列表会逐周变长（例如XX课程 17 → 19 → 21 条）。**不需要任何特殊操作**，每周重复同一步：
 
 ```text
 打开课程「直播」页 → 跑一次 scrape_course.js → 双击 getlec.cmd
@@ -260,7 +260,7 @@ GET /api/activities/<activityId>
 `scrape_course.js` 导出的是 `previewToken` 地址（不是最终的签名地址）：
 
 ```
-# 2026-11-09T02:10:00+00:00 2026-11-09-计算机网络与系统
+# 2026-11-09T02:10:00+00:00 2026-11-09-XX课程
 https://incast.wh.bjtu.edu.cn/api/base/orgs/bjtu/captures/<hash>/videos/280740/preview?previewToken=xxx
 ```
 
@@ -312,8 +312,8 @@ media\<清单名>\
 
 | 情况 | 文件名 |
 |---|---|
-| 一天**一节** | `计网_20260921.mp4` |
-| 一天**多节** | `软件设计_20261014_150100-160500.mp4`<br>`软件设计_20261014_162000-181500.mp4` |
+| 一天**一节** | `XX课程_20260921.mp4` |
+| 一天**多节** | `XX课程_20261014_150100-160500.mp4`<br>`XX课程_20261014_162000-181500.mp4` |
 
 **为什么一天多节要带时段**：课程表里一天两节真会发生（实测 10-14 有 64 分钟短课 + 115 分钟正常课）。撞名时程序把旧文件改成带时段的名字、并给目录打 `.multi`，之后新文件也带时段。已带时段的名字不会被二次改名。
 
@@ -343,17 +343,17 @@ D:\course-notes\只要音轨.cmd
 D:\course-notes\只要视频.cmd
 
 :: 只处理一份清单（把路径拖到 .cmd 上，或直接写）
-D:\course-notes\只要音轨.cmd lists\计网.txt
+D:\course-notes\只要音轨.cmd lists\XX课程.txt
 
 :: 换轨
-D:\course-notes\getlec.cmd lists\计网.txt INSTRUCTOR
+D:\course-notes\getlec.cmd lists\XX课程.txt INSTRUCTOR
 ```
 
 ### 单节 / 调试
 
 ```bat
 :: 只算路径，不联网、不建目录
-python D:\course-notes\tools\lectures.py --urls lists\计网.txt --dry-run
+python D:\course-notes\tools\lectures.py --urls lists\XX课程.txt --dry-run
 
 :: 只验地址是否有效
 python D:\course-notes\tools\check_urls.py
@@ -460,12 +460,12 @@ D:\course-notes\getlec.cmd
 
 ```text
 === 第 1/20 节: 20260921_101000-120500 ===
-  跳过（已下载）计网_20260921.mp4
+  跳过（已下载）XX课程_20260921.mp4
 === 第 2/20 节: 20260928_101000-120500 ===
-  跳过（已下载）计网_20260928.mp4
+  跳过（已下载）XX课程_20260928.mp4
 ...
 === 第 20/20 节: 20261116_101000-120500 ===
-  [下载] -> ...\计网_20261116.mp4     ← 只有新的这节真的下
+  [下载] -> ...\XX课程_20261116.mp4     ← 只有新的这节真的下
 [小结] 新下载 1 节 / 跳过 19 节 / 失败 0 节
 ```
 
@@ -475,7 +475,7 @@ D:\course-notes\getlec.cmd
 
 ```bat
 set GETLEC_FORCE=1
-D:\course-notes\getlec.cmd lists\计网.txt
+D:\course-notes\getlec.cmd lists\XX课程.txt
 ```
 
 ### 刷新已下载清单
@@ -549,7 +549,7 @@ sec-ch-ua, sec-ch-ua-platform, sec-ch-ua-mobile
 
 ### 为什么文件名带课程名
 
-因为**上传工具（如千问）只显示文件名、不显示路径**。混在一堆 `.m4a` 里，`计网_20260921.m4a` 一眼能认出是哪门课。
+因为**上传工具（如千问）只显示文件名、不显示路径**。混在一堆 `.m4a` 里，`XX课程_20260921.m4a` 一眼能认出是哪门课。
 
 ### 为什么 `.cmd` 必须纯 ASCII + CRLF
 
@@ -621,17 +621,17 @@ D:\course-notes\                          ← 整个文件夹可搬到任意位�
 │  └─ test_base_headers.py   请求头回归
 ├─ dist\                     ★ 抓取书签（install.html 拖拽安装）
 ├─ lists\                    ★ 在这里建 <科目>.txt
-│  ├─ 计网.txt               待下载队列（粘地址）
-│  ├─ 计网.md                已下载索引（自动生成）
-│  ├─ 软件设计.txt
-│  └─ 软件设计.md
+│  ├─ XX课程.txt             待下载队列（粘地址）
+│  ├─ XX课程.md              已下载索引（自动生成）
+│  ├─ YY课程.txt
+│  └─ YY课程.md
 ├─ media\
-│  ├─ 计网\
-│  │  └─ 20260921\  计网_20260921.mp4 + .m4a
-│  └─ 软件设计\
-│     ├─ 20260918\  软件设计_20260918.mp4 + .m4a
-│     └─ 20261014\  软件设计_20261014_150100-160500.mp4 + .m4a
-│                    软件设计_20261014_162000-181500.mp4 + .m4a
+│  ├─ XX课程\
+│  │  └─ 20260921\  XX课程_20260921.mp4 + .m4a
+│  └─ YY课程\
+│     ├─ 20260918\  YY课程_20260918.mp4 + .m4a
+│     └─ 20261014\  YY课程_20261014_150100-160500.mp4 + .m4a
+│                    YY课程_20261014_162000-181500.mp4 + .m4a
 ├─ har_archive\              历史清单归档（urls_<日期>.txt）
 ├─ python\                   （可选）免安装 Python，放了就优先用它
 └─ tmp\                      临时目录（可清空）
@@ -652,13 +652,13 @@ python D:\course-notes\tools\test_base_headers.py  :: 需联网 + 新鲜清单
 覆盖一节/两节/三节、旧命名迁移、BOM 容错：
 
 ```text
-[第一节 命名]     PASS  软件设计_20261014.mp4
+[第一节 命名]     PASS  XX课程_20261014.mp4
 [第一节 无.multi] PASS
 [第二节 有.multi] PASS
-[第二节 旧改名]   PASS  软件设计_20261014_150100-160500.mp4
-[第二节 新命名]   PASS  软件设计_20261014_162000-181500.mp4
+[第二节 旧改名]   PASS  XX课程_20261014_150100-160500.mp4
+[第二节 新命名]   PASS  XX课程_20261014_162000-181500.mp4
 [第三节 不改旧名] PASS
-[第三节 新命名]   PASS  软件设计_20261014_190000-200000.mp4
+[第三节 新命名]   PASS  XX课程_20261014_190000-200000.mp4
 [BOM 同课时]      PASS
 全部通过
 ```

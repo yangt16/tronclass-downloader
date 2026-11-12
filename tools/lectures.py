@@ -2,15 +2,15 @@
 lectures.py - 主编排：清单 → 下载 → 抽音轨 → 命名 → 归档 → 刷新索引。
 
 唯一入口是 lists\\<科目>.txt（每行一个播放地址）。
-清单名就是课程名：lists\\计网.txt -> media\\计网\\计网_<日期>.mp4 + .m4a
+清单名就是课程名：lists\\X.txt -> media\\X\\X_<日期>.mp4 + .m4a
 
 媒体地址不含登录信息，只靠请求头就能下（见 get_media.BASE_HEADERS）。
 
 用法:
-    python lectures.py --urls lists\\计网.txt
-    python lectures.py --urls lists\\计网.txt --track INSTRUCTOR
-    python lectures.py --urls lists\\计网.txt --dest D:\\courses\\db
-    python lectures.py --urls lists\\计网.txt --dry-run      # 只打印路径，不写盘
+    python lectures.py --urls lists\\X.txt
+    python lectures.py --urls lists\\X.txt --track INSTRUCTOR
+    python lectures.py --urls lists\\X.txt --dest D:\\courses\\db
+    python lectures.py --urls lists\\X.txt --dry-run      # 只打印路径，不写盘
 """
 import argparse
 import pathlib
@@ -48,7 +48,7 @@ FFPROBE = _exe("ffprobe")
 # ---------------- 落点 ---------------- #
 
 def resolve_outdir(args, urls_file=""):
-    """落点完全由清单文件名决定：lists\\计网.txt -> media\\计网\\
+    """落点完全由清单文件名决定：lists\\X.txt -> media\\X\\
 
     --dest 可以覆盖（相对本程序或绝对路径）；直接调用本脚本且没给 --dest 时，
     也按清单文件名推。
@@ -282,7 +282,7 @@ def main():
                     help="跑完不动清单（不归档、不重建），适合长期维护的增量清单")
     a = ap.parse_args()
 
-    # 落点由清单文件名决定：lists\计网.txt -> media\计网\
+    # 落点由清单文件名决定：lists\X.txt -> media\X\
     outdir = resolve_outdir(a, a.urls)
     print(f"[dest] 落点: {outdir}")
 

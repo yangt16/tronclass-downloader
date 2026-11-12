@@ -41,7 +41,7 @@ def main():
         print("  lists\\ 里还没有可下载的清单")
         print("=" * 56)
         print(f"  在 {LISTS} 下新建一个 <科目名>.txt，例如：")
-        print("    lists\\计网.txt")
+        print("    lists\\X.txt")
         print("  把每节课的播放地址粘进去（一行一个），再双击 getlec.cmd。")
         print("")
         print("  拿地址: 回放页 F12 -> 筛 ENCODER -> 播放 -> 右键复制 URL")

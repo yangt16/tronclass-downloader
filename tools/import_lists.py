@@ -23,7 +23,7 @@ except Exception:
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 LISTS = ROOT / "lists"
-DUP_SUFFIX = re.compile(r"\s*\(\d+\)$")     # 浏览器重名会存成 "计网 (1).txt"
+DUP_SUFFIX = re.compile(r"\s*\(\d+\)$")     # 浏览器重名会存成 "X (1).txt"
 
 
 def default_downloads():

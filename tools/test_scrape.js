@@ -28,7 +28,7 @@ for (let i = 0; i < 17; i++) {
   items.push({
     id: 270000 + i,
     type: 'lecture_live',
-    title: `2026-11-${String(17 - i).padStart(2, '0')}-计算机网络与系统`,
+    title: `2026-11-${String(17 - i).padStart(2, '0')}-X`,
     start_time: `2026-11-${String(17 - i).padStart(2, '0')}T02:10:00Z`,
     is_started: started,
   });
